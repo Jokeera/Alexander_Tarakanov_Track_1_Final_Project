@@ -1,23 +1,28 @@
 # Python
 __pycache__/
 *.py[cod]
+*.so
 *.egg-info/
+*.egg
+*.pyo
 
 # Jupyter
 .ipynb_checkpoints/
 
-# macOS
-.DS_Store
-Thumbs.db
-
-# MLflow local artifacts
+# MLflow (локальные артефакты)
 mlruns/
 mlartifacts/
 
-# Models & training artifacts (храним через DVC / локально)
-models/*.pkl
-models/*.png
-models/metrics.json
+# DVC data (исключаем сырые/обработанные CSV, кроме .gitkeep/.dvc)
+data/**/*.csv
+!data/**/.gitkeep
 
-# Processed data (генерится пайплайном; уже есть data/processed/.gitignore)
-data/processed/*.csv
+# Models (артефакты)
+models/*.pkl
+models/*.joblib
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
