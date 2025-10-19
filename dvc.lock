@@ -1,0 +1,129 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m src.data.make_dataset
+    deps:
+    - path: data/raw/UCI_Credit_Card.csv
+      hash: md5
+      md5: 940b416bb13a9b24bb5c9e1589284005
+      size: 2862995
+    - path: src/data/make_dataset.py
+      hash: md5
+      md5: 1a851064b3c2e8cd8da1eb8472f85b16
+      size: 2867
+    params:
+      params.yaml:
+        data:
+          raw_path: data/raw/UCI_Credit_Card.csv
+          processed_path: data/processed/
+          train_path: data/processed/train.csv
+          test_path: data/processed/test.csv
+          test_size: 0.2
+          random_state: 42
+          target: target
+    outs:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: ea00658a1b5a54f88dd61e6ce9f75be0
+      size: 696050
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 23ac3ff19a2b13e36efecd90d406a6c0
+      size: 2782435
+  features:
+    cmd: python -m src.features.build_features
+    deps:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: ea00658a1b5a54f88dd61e6ce9f75be0
+      size: 696050
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 23ac3ff19a2b13e36efecd90d406a6c0
+      size: 2782435
+    - path: src/features/build_features.py
+      hash: md5
+      md5: 6934cdd13cd9cdd48c7c2c85954fa168
+      size: 3480
+    params:
+      params.yaml:
+        features:
+          age_bins:
+          - 18
+          - 30
+          - 45
+          - 60
+          - 100
+          age_labels:
+          - young
+          - middle
+          - senior
+          - elderly
+    outs:
+    - path: data/processed/test_features.csv
+      hash: md5
+      md5: d54a0f1dacb88baa4c0e310ea3c0b868
+      size: 1313209
+    - path: data/processed/train_features.csv
+      hash: md5
+      md5: 95df269061e78f6915dd538074bc6461
+      size: 5254625
+  train:
+    cmd: python -m src.models.train
+    deps:
+    - path: data/processed/test_features.csv
+      hash: md5
+      md5: d54a0f1dacb88baa4c0e310ea3c0b868
+      size: 1313209
+    - path: data/processed/train_features.csv
+      hash: md5
+      md5: 95df269061e78f6915dd538074bc6461
+      size: 5254625
+    - path: src/models/pipeline.py
+      hash: md5
+      md5: a78f99d01ad4261ceb6644cd6ae5e72e
+      size: 2829
+    - path: src/models/train.py
+      hash: md5
+      md5: aad774e6bef5465dbd64ed4c8d73dd0b
+      size: 7984
+    params:
+      params.yaml:
+        mlflow:
+          tracking_uri: ./mlruns
+          experiment_name: credit_scoring
+        model:
+          algorithm: logistic_regression
+          random_state: 42
+          logistic_regression:
+            penalty: l2
+            C: 1.0
+            max_iter: 1000
+            solver: lbfgs
+            class_weight: balanced
+          random_forest:
+            n_estimators: 50
+            max_depth: 10
+            min_samples_split: 20
+            min_samples_leaf: 10
+            class_weight: balanced
+            random_state: 42
+          gradient_boosting:
+            n_estimators: 50
+            learning_rate: 0.1
+            max_depth: 5
+            min_samples_split: 20
+            min_samples_leaf: 10
+            random_state: 42
+        training:
+          cv_folds: 3
+          scoring: roc_auc
+    outs:
+    - path: models/metrics.json
+      hash: md5
+      md5: a8be8003ac58559148120fe49329fdff
+      size: 384
+    - path: models/model.pkl
+      hash: md5
+      md5: 7c05d716e1313edfd56d2a52075b0335
+      size: 7959
