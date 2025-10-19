@@ -1,19 +1,25 @@
 """Model training script with MLflow tracking"""
 
-import pandas as pd
-import numpy as np
-import yaml
 import json
+from pathlib import Path
+
 import joblib
+import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
-from pathlib import Path
-from sklearn.metrics import (
-    roc_auc_score, f1_score, precision_score, recall_score,
-    average_precision_score, confusion_matrix, roc_curve
-)
-import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
+import yaml
+from sklearn.metrics import (
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+    roc_curve,
+)
 
 from .pipeline import create_pipeline, get_model_params
 

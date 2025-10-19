@@ -1,8 +1,9 @@
 """Data preparation script for credit scoring dataset"""
 
+from pathlib import Path
+
 import pandas as pd
 import yaml
-from pathlib import Path
 from sklearn.model_selection import train_test_split
 
 
