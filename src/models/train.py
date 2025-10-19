@@ -15,7 +15,7 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from src.models.pipeline import create_pipeline, get_model_params
+from .pipeline import create_pipeline, get_model_params
 
 
 def load_params():

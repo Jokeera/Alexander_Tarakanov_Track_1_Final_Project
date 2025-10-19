@@ -1,0 +1,15 @@
+artifact_uri: /Users/alext/Desktop/MIFI 3/Трек_2_Автоматизация_процессов_разработки_и_тестирования_моделей_машинного_обучения_Сессионное_задание_Итоговый_проект/Alexander_Tarakanov_Track_1_Final_Project/mlruns/461650015759883899/ec34ca8427bc46f595ca84bc6517c921/artifacts
+end_time: 1760899422195
+entry_point_name: ''
+experiment_id: '461650015759883899'
+lifecycle_stage: active
+run_id: ec34ca8427bc46f595ca84bc6517c921
+run_name: powerful-bug-372
+run_uuid: ec34ca8427bc46f595ca84bc6517c921
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1760899417912
+status: 3
+tags: []
+user_id: alext

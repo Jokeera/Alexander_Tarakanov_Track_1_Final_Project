@@ -1,6 +1,6 @@
 stages:
   prepare:
-    cmd: python src/data/make_dataset.py
+    cmd: python -m src.data.make_dataset
     deps:
       - src/data/make_dataset.py
       - data/raw/UCI_Credit_Card.csv
@@ -11,7 +11,7 @@ stages:
       - data/processed/test.csv
   
   features:
-    cmd: python src/features/build_features.py
+    cmd: python -m src.features.build_features
     deps:
       - src/features/build_features.py
       - data/processed/train.csv
@@ -23,7 +23,7 @@ stages:
       - data/processed/test_features.csv
   
   train:
-    cmd: python src/models/train.py
+    cmd: python -m src.models.train
     deps:
       - src/models/train.py
       - src/models/pipeline.py
