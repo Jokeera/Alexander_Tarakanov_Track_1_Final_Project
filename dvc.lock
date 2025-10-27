@@ -93,7 +93,7 @@ stages:
           tracking_uri: ./mlruns
           experiment_name: credit_scoring
         model:
-          algorithm: logistic_regression
+          algorithm: gradient_boosting
           random_state: 42
           logistic_regression:
             penalty: l2
@@ -121,9 +121,9 @@ stages:
     outs:
     - path: models/metrics.json
       hash: md5
-      md5: a8be8003ac58559148120fe49329fdff
-      size: 384
+      md5: 61a89475a75bcd9a8c04c4b63b2f63eb
+      size: 388
     - path: models/model.pkl
       hash: md5
-      md5: 7c05d716e1313edfd56d2a52075b0335
-      size: 7959
+      md5: 0ce48f9ae0b900408a1c22aec7813bf3
+      size: 196219
