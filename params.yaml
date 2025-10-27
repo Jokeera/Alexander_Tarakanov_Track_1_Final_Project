@@ -12,7 +12,7 @@ features:
   age_labels: ['young', 'middle', 'senior', 'elderly']
 
 model:
-  algorithm: logistic_regression
+  algorithm: gradient_boosting
   random_state: 42
   
   logistic_regression:
