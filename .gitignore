@@ -26,3 +26,4 @@ models/*.joblib
 Thumbs.db
 .vscode/
 .idea/
+!data/raw/UCI_Credit_Card.csv
