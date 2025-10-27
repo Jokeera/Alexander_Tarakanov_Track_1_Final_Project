@@ -1,12 +1,15 @@
 """
 PSI-мониторинг дрифта по инженерным признакам.
-Читает data/processed/train_features.csv и test_features.csv,
-считает PSI для признаков из params.yaml → monitoring.features_to_monitor,
-пишет отчёт в models/drift_report.json.
+Берёт пути и параметры из params.yaml:
+- data.train_features_path / data.test_features_path
+- monitoring.features_to_monitor, monitoring.psi_threshold, monitoring.buckets
+Пишет отчёт в models/drift_report.json и завершает процесс кодом:
+  0 — дрифтов нет; 1 — есть 'drift' или 'missing' фичи.
 """
 
 from __future__ import annotations
 import json
+import sys
 from pathlib import Path
 from typing import Dict, List
 
@@ -15,24 +18,24 @@ import pandas as pd
 import yaml
 
 
-# --- конфиг ---
+# ---------------- utils ----------------
+
 def load_params(path: str = "params.yaml") -> dict:
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
 
-# --- утилиты PSI ---
 def _uniform_bins(min_val: float, max_val: float, buckets: int) -> np.ndarray:
-    """Равномерные границы бинов. Если диапазон вырожден, слегка расширяем."""
+    """Равномерные границы бинов. Если диапазон вырожден — чуть расширяем."""
     if not np.isfinite(min_val) or not np.isfinite(max_val):
         min_val, max_val = 0.0, 1.0
     if max_val <= min_val:
-        max_val = min_val + 1e-6
+        max_val = float(min_val) + 1e-6
     return np.linspace(min_val, max_val, buckets + 1)
 
 
 def _hist_proportions(values: np.ndarray, edges: np.ndarray, eps: float = 1e-6) -> np.ndarray:
-    """Доли наблюдений по бинам с защитой от нулей."""
+    """Доли наблюдений по бинам с защитой от нулей/деления."""
     counts, _ = np.histogram(values, bins=edges)
     total = counts.sum()
     if total == 0:
@@ -58,22 +61,24 @@ def _coerce_numeric(series: pd.Series) -> pd.Series:
     return pd.to_numeric(series, errors="coerce").astype(float)
 
 
-# --- основной скрипт ---
-def main() -> None:
-    print("📊 Running PSI drift monitoring...")
+# ---------------- main ----------------
 
-    params = load_params()
-    mon = params.get("monitoring", {})
+def main() -> int:
+    print("📊 Running PSI drift monitoring...")
+    P = load_params()
+    mon = P.get("monitoring", {})
+
     features_to_monitor: List[str] = mon.get("features_to_monitor", [])
     psi_threshold: float = float(mon.get("psi_threshold", 0.25))
-    buckets: int = int(mon.get("buckets", 10))  # можно задать в params.yaml
+    buckets: int = int(mon.get("buckets", 10))
 
-    # ЧИТАЕМ ФАЙЛЫ С ФИЧАМИ, а не сырой train/test
-    train_path = Path("data/processed/train_features.csv")
-    test_path = Path("data/processed/test_features.csv")
+    # пути к файлам с ФИЧАМИ из params.yaml
+    train_path = Path(P["data"]["train_features_path"])
+    test_path = Path(P["data"]["test_features_path"])
+
     if not train_path.exists() or not test_path.exists():
-        print("❌ Feature files not found. Run `dvc repro` to generate features.")
-        return
+        print("❌ Feature files not found. Run pipeline to generate features.")
+        return 1
 
     train = pd.read_csv(train_path)
     test = pd.read_csv(test_path)
@@ -95,13 +100,12 @@ def main() -> None:
             continue
 
         score = psi_score(tr, te, buckets=buckets)
-        status = "ok"
         if score >= psi_threshold:
             status = "drift"; n_drift += 1
-        elif score >= 0.1:
+        elif score >= 0.10:
             status = "watch"; n_watch += 1
         else:
-            n_ok += 1
+            status = "ok"; n_ok += 1
 
         report[feat] = {
             "status": status,
@@ -112,17 +116,36 @@ def main() -> None:
             "n_test": int(te.size),
         }
 
+    # агрегированный статус
+    global_status = "ok"
+    exit_code = 0
+    if n_drift > 0 or len(missing) > 0:
+        global_status = "drift"
+        exit_code = 1
+    elif n_watch > 0:
+        global_status = "watch"
+
+    summary = {
+        "_summary": {
+            "status": global_status,
+            "psi_threshold": psi_threshold,
+            "bins": buckets,
+            "ok": n_ok,
+            "watch": n_watch,
+            "drift": n_drift,
+            "missing": len(missing),
+        }
+    }
+    full_report = {**summary, **report}
+
     out_path = Path("models/drift_report.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", encoding="utf-8") as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
+    out_path.write_text(json.dumps(full_report, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"✅ Drift report saved to {out_path}")
-    print(f"   OK: {n_ok} | WATCH: {n_watch} | DRIFT: {n_drift}")
-    if missing:
-        print(f"   Missing features: {', '.join(missing)}")
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    print(json.dumps(full_report, ensure_ascii=False, indent=2))
+    return exit_code
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

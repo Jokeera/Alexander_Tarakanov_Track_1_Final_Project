@@ -1,0 +1,10 @@
+.git
+__pycache__/
+.ipynb_checkpoints/
+mlruns/
+data/raw/*.csv
+data/processed/
+*.pyc
+*.pyo
+*.swp
+.env
