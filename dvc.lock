@@ -9,15 +9,17 @@ stages:
       size: 2862995
     - path: src/data/make_dataset.py
       hash: md5
-      md5: 41873af652868b5e5a2413b5bea5be1e
-      size: 7878
+      md5: 2d8a9a89f4078ffa6447534ffb0d5888
+      size: 4746
     params:
       params.yaml:
         data:
           raw_path: data/raw/UCI_Credit_Card.csv
           processed_path: data/processed/
-          train_path: data/processed/train.csv
-          test_path: data/processed/test.csv
+          train_raw_path: data/processed/train.csv
+          test_raw_path: data/processed/test.csv
+          train_features_path: data/processed/train_features.csv
+          test_features_path: data/processed/test_features.csv
           test_size: 0.2
           random_state: 42
           target: target
@@ -43,8 +45,8 @@ stages:
       size: 2782435
     - path: src/features/build_features.py
       hash: md5
-      md5: 4f8e59886ee1644851c572c7dae48b37
-      size: 3393
+      md5: 039fdd36ea782c95e747261c2bb2c9e0
+      size: 4821
     params:
       params.yaml:
         features:
@@ -62,31 +64,31 @@ stages:
     outs:
     - path: data/processed/test_features.csv
       hash: md5
-      md5: d54a0f1dacb88baa4c0e310ea3c0b868
+      md5: 8973058a7607c6be3a95e565f1cde60f
       size: 1313209
     - path: data/processed/train_features.csv
       hash: md5
-      md5: 95df269061e78f6915dd538074bc6461
+      md5: de9a73215339fb70258918714ebb6611
       size: 5254625
   train:
     cmd: python -m src.models.train
     deps:
     - path: data/processed/test_features.csv
       hash: md5
-      md5: d54a0f1dacb88baa4c0e310ea3c0b868
+      md5: 8973058a7607c6be3a95e565f1cde60f
       size: 1313209
     - path: data/processed/train_features.csv
       hash: md5
-      md5: 95df269061e78f6915dd538074bc6461
+      md5: de9a73215339fb70258918714ebb6611
       size: 5254625
     - path: src/models/pipeline.py
       hash: md5
-      md5: 34b8945fb0d8626314df264c3a8fb88e
-      size: 2829
+      md5: 19dfa0d51d3924a975d2cf39d564e73a
+      size: 3295
     - path: src/models/train.py
       hash: md5
-      md5: 50fef0f9f8aa60c76ac33883cf8bd4d7
-      size: 8006
+      md5: b4fc1f1eb9d436b743797a4adde931a7
+      size: 6351
     params:
       params.yaml:
         mlflow:
@@ -121,9 +123,47 @@ stages:
     outs:
     - path: models/metrics.json
       hash: md5
-      md5: 61a89475a75bcd9a8c04c4b63b2f63eb
-      size: 388
+      md5: 7200a1c5fe8e0eb6017c5f0cb18687a6
+      size: 168
     - path: models/model.pkl
       hash: md5
-      md5: 0ce48f9ae0b900408a1c22aec7813bf3
-      size: 196219
+      md5: 7994c258127c70068ea3eabf24847cc4
+      size: 565595
+  drift:
+    cmd: python -m src.monitoring.drift
+    deps:
+    - path: data/processed/test_features.csv
+      hash: md5
+      md5: 8973058a7607c6be3a95e565f1cde60f
+      size: 1313209
+    - path: data/processed/train_features.csv
+      hash: md5
+      md5: de9a73215339fb70258918714ebb6611
+      size: 5254625
+    - path: models/model.pkl
+      hash: md5
+      md5: 7994c258127c70068ea3eabf24847cc4
+      size: 565595
+    - path: src/monitoring/drift.py
+      hash: md5
+      md5: 481a03fd340acf2c5695c637f06e89a8
+      size: 324
+    params:
+      params.yaml:
+        monitoring:
+          psi_threshold: 0.25
+          buckets: 10
+          features_to_monitor:
+          - utilization_last
+          - pay_delay_sum
+          - pay_delay_max
+          - bill_trend
+          - pay_trend
+          - bill_avg
+          - pay_amt_avg
+          - pay_to_bill_ratio
+    outs:
+    - path: models/drift_report.json
+      hash: md5
+      md5: 528045491d5639d960826af4e1e00f22
+      size: 1298

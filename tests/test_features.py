@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import warnings
+warnings.filterwarnings("ignore")
+
 from src.features.build_features import create_features
 
 
