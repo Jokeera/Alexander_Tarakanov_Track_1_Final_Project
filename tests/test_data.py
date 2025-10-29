@@ -1,14 +1,14 @@
 """Tests for data preparation and validation"""
 
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
 
-import warnings
-
 warnings.filterwarnings("ignore")
 
-from src.data.make_dataset import clean_data, cast_dtypes, reorder_columns
+from src.data.make_dataset import cast_dtypes, clean_data, reorder_columns
 from src.data.validation import validate_dataframe
 
 

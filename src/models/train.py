@@ -2,19 +2,29 @@
 Stage: TRAIN — FINAL
 Обучение + CV + дисбаланс классов + выбор порога + MLflow (модель/артефакты/метрики).
 """
+import json
+import warnings
 from pathlib import Path
-import json, warnings
+
 warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
 
+import joblib
+import matplotlib.pyplot as plt
+import mlflow
+import mlflow.sklearn
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
-import joblib, yaml, mlflow, mlflow.sklearn
-
+import yaml
 from sklearn.metrics import (
-    roc_auc_score, average_precision_score, precision_recall_curve,
-    precision_score, recall_score, f1_score, confusion_matrix, roc_curve
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    precision_recall_curve,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+    roc_curve,
 )
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 

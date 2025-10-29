@@ -6,8 +6,9 @@ FastAPI scoring service — FINAL
 → использует сохранённый лучший порог из metrics.json
 """
 
-from pathlib import Path
 import json
+from pathlib import Path
+
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException

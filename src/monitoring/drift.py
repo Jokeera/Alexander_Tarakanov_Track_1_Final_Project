@@ -8,8 +8,8 @@ Delegates logic to `api_drift_test.py`, which uses:
 """
 
 import sys
-from .api_drift_test import main as run_drift
 
+from .api_drift_test import main as run_drift
 
 if __name__ == "__main__":
     sys.exit(run_drift())

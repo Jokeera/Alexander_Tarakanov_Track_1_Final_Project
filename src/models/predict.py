@@ -7,9 +7,14 @@ Stage: PREDICT — FINAL
   --single '{"limit_bal":20000, "sex":2, ...}' (все features-поля)
 """
 from __future__ import annotations
-import argparse, json
+
+import argparse
+import json
 from pathlib import Path
-import joblib, pandas as pd, yaml
+
+import joblib
+import pandas as pd
+import yaml
 
 # используем список исходных (preprocessor-input) фичей из пайплайна
 from .pipeline import get_feature_columns

@@ -1,10 +1,10 @@
 """Tests for feature engineering"""
 
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
-
-import warnings
 
 warnings.filterwarnings("ignore")
 
