@@ -1,77 +1,97 @@
 """
-Offline prediction script using trained pipeline
-
-Examples:
-  python -m src.models.predict --input data.csv --output preds.csv
-  python -m src.models.predict --single '{"limit_bal":20000, "sex":2, ...}'
+Stage: PREDICT — FINAL
+Оффлайн-инференс обученного Pipeline.
+Требует вход в СХЕМЕ FEATURES (как train_features.csv/test_features.csv).
+Поддерживает:
+  --input  data/features.csv  -> predictions.csv
+  --single '{"limit_bal":20000, "sex":2, ...}' (все features-поля)
 """
-
-import argparse
-import json
+from __future__ import annotations
+import argparse, json
 from pathlib import Path
-import joblib
-import pandas as pd
-import yaml
+import joblib, pandas as pd, yaml
 
+# используем список исходных (preprocessor-input) фичей из пайплайна
+from .pipeline import get_feature_columns
 
-def load_params():
+DEFAULT_MODEL_PATH = "models/model.pkl"
+METRICS_PATH = "models/metrics.json"
+
+def load_params() -> dict:
     with open("params.yaml", "r") as f:
         return yaml.safe_load(f)
 
+def load_threshold(default_thr: float = 0.5) -> float:
+    p = Path(METRICS_PATH)
+    if not p.exists():
+        return default_thr
+    try:
+        obj = json.loads(p.read_text())
+        # train.py писал: {"best_thr":{"threshold": ...}}
+        return float(obj.get("best_thr", {}).get("threshold", default_thr))
+    except Exception:
+        return default_thr
 
-def load_model(model_path: str):
-    """Load trained pipeline."""
-    if not Path(model_path).exists():
-        raise FileNotFoundError(f"Model not found: {model_path}")
-    return joblib.load(model_path)
+def load_model(path: str = DEFAULT_MODEL_PATH):
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"Model not found: {p}")
+    return joblib.load(p)
 
+def ensure_schema(df: pd.DataFrame) -> pd.DataFrame:
+    num, cat = get_feature_columns()
+    expected = num + cat
+    missing = [c for c in expected if c not in df.columns]
+    if missing:
+        raise ValueError(
+            "Input must be in FEATURES schema (after build_features). "
+            f"Missing columns: {missing}"
+        )
+    # жёстко упорядочим колонки под pipeline
+    return df.loc[:, expected]
+
+def predict_df(model, df: pd.DataFrame, threshold: float) -> pd.DataFrame:
+    X = ensure_schema(df)
+    proba = model.predict_proba(X)[:, 1]
+    pred = (proba >= threshold).astype(int)
+    out = df.copy()
+    out["probability"] = proba
+    out["prediction"]  = pred
+    out["threshold"]   = threshold
+    return out
 
 def main():
-    parser = argparse.ArgumentParser(description="Run offline credit scoring predictions")
-    parser.add_argument("--input", type=str, help="Path to CSV with raw features")
+    parser = argparse.ArgumentParser(description="Offline credit scoring predictions (FEATURES schema)")
+    parser.add_argument("--input", type=str, help="CSV with FEATURES columns")
     parser.add_argument("--output", type=str, default="predictions.csv")
-    parser.add_argument("--single", type=str, help="Single input row as JSON")
+    parser.add_argument("--single", type=str, help="Single row as JSON with FEATURES columns")
+    parser.add_argument("--model", type=str, default=DEFAULT_MODEL_PATH)
     args = parser.parse_args()
 
-    # Load model
-    model_path = "models/model.pkl"
-    model = load_model(model_path)
+    model = load_model(args.model)
+    threshold = load_threshold(default_thr=0.5)
 
     if args.single:
-        # Single row JSON
-        data = json.loads(args.single)
-        df = pd.DataFrame([data])
-
-        proba = model.predict_proba(df)[0, 1]
-        pred = int(model.predict(df)[0])
-
+        row = json.loads(args.single)
+        df = pd.DataFrame([row])
+        out = predict_df(model, df, threshold)
         print(json.dumps({
-            "prediction": pred,
-            "probability": float(proba)
+            "prediction": int(out.loc[0, "prediction"]),
+            "probability": float(out.loc[0, "probability"]),
+            "threshold": float(threshold)
         }, indent=2))
         return 0
 
     if args.input:
-        # Batch predictions on raw CSV
         df = pd.read_csv(args.input)
-
-        proba = model.predict_proba(df)[:, 1]
-        pred = model.predict(df)
-
-        df_out = df.copy()
-        df_out["probability"] = proba
-        df_out["prediction"] = pred
-
+        out = predict_df(model, df, threshold)
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
-        df_out.to_csv(args.output, index=False)
-
-        print(f"✅ Predictions saved to: {args.output}")
-        print(df_out.head())
+        out.to_csv(args.output, index=False)
+        print(f"✅ Saved: {args.output}  |  n={len(out)}  |  thr={threshold:.3f}")
         return 0
 
-    print("❌ No input provided. Use --input or --single")
+    print("❌ Provide --input CSV (FEATURES schema) or --single JSON.")
     return 1
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

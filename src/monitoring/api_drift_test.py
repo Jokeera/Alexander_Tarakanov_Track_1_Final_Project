@@ -20,6 +20,7 @@ import yaml
 
 # ---------------- utils ----------------
 
+
 def load_params(path: str = "params.yaml") -> dict:
     with open(path, "r") as f:
         return yaml.safe_load(f)
@@ -63,6 +64,7 @@ def _coerce_numeric(series: pd.Series) -> pd.Series:
 
 # ---------------- main ----------------
 
+
 def main() -> int:
     print("📊 Running PSI drift monitoring...")
     P = load_params()
@@ -101,11 +103,14 @@ def main() -> int:
 
         score = psi_score(tr, te, buckets=buckets)
         if score >= psi_threshold:
-            status = "drift"; n_drift += 1
+            status = "drift"
+            n_drift += 1
         elif score >= 0.10:
-            status = "watch"; n_watch += 1
+            status = "watch"
+            n_watch += 1
         else:
-            status = "ok"; n_ok += 1
+            status = "ok"
+            n_ok += 1
 
         report[feat] = {
             "status": status,

@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 import warnings
+
 warnings.filterwarnings("ignore")
 
 from src.features.build_features import create_features
@@ -134,9 +135,14 @@ def test_no_nan_in_new_features(sample_data):
     df_features = create_features(df, params)
 
     new_features = [
-        "utilization_last", "pay_delay_sum", "pay_delay_max",
-        "bill_trend", "pay_trend", "bill_avg",
-        "pay_amt_avg", "pay_to_bill_ratio"
+        "utilization_last",
+        "pay_delay_sum",
+        "pay_delay_max",
+        "bill_trend",
+        "pay_trend",
+        "bill_avg",
+        "pay_amt_avg",
+        "pay_to_bill_ratio",
     ]
 
     for feat in new_features:

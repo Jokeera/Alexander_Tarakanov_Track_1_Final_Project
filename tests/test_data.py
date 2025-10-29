@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 import warnings
-warnings.filterwarnings("ignore")
 
+warnings.filterwarnings("ignore")
 
 from src.data.make_dataset import clean_data, cast_dtypes, reorder_columns
 from src.data.validation import validate_dataframe
@@ -15,32 +15,34 @@ from src.data.validation import validate_dataframe
 @pytest.fixture
 def raw_data():
     """Small valid raw-like dataset before cleaning"""
-    return pd.DataFrame({
-        "limit_bal": [20000, 30000],
-        "sex": [1, 2],
-        "education": [2, 5],  # 5 → будет заменено на 4
-        "marriage": [1, 0],   # 0 → будет заменено на 3
-        "age": [25, 45],
-        "pay_0": [0, 2],
-        "pay_2": [2, 1],
-        "pay_3": [0, 0],
-        "pay_4": [0, 0],
-        "pay_5": [0, 0],
-        "pay_6": [0, 0],
-        "bill_amt1": [10000, 20000],
-        "bill_amt2": [9000, 19000],
-        "bill_amt3": [8000, 18000],
-        "bill_amt4": [7000, 17000],
-        "bill_amt5": [6000, 16000],
-        "bill_amt6": [5000, 15000],
-        "pay_amt1": [500, 1000],
-        "pay_amt2": [600, 1100],
-        "pay_amt3": [700, 1200],
-        "pay_amt4": [800, 1300],
-        "pay_amt5": [900, 1400],
-        "pay_amt6": [1000, 1500],
-        "target": [0, 1],
-    })
+    return pd.DataFrame(
+        {
+            "limit_bal": [20000, 30000],
+            "sex": [1, 2],
+            "education": [2, 5],  # 5 → будет заменено на 4
+            "marriage": [1, 0],  # 0 → будет заменено на 3
+            "age": [25, 45],
+            "pay_0": [0, 2],
+            "pay_2": [2, 1],
+            "pay_3": [0, 0],
+            "pay_4": [0, 0],
+            "pay_5": [0, 0],
+            "pay_6": [0, 0],
+            "bill_amt1": [10000, 20000],
+            "bill_amt2": [9000, 19000],
+            "bill_amt3": [8000, 18000],
+            "bill_amt4": [7000, 17000],
+            "bill_amt5": [6000, 16000],
+            "bill_amt6": [5000, 15000],
+            "pay_amt1": [500, 1000],
+            "pay_amt2": [600, 1100],
+            "pay_amt3": [700, 1200],
+            "pay_amt4": [800, 1300],
+            "pay_amt5": [900, 1400],
+            "pay_amt6": [1000, 1500],
+            "target": [0, 1],
+        }
+    )
 
 
 def test_clean_data(raw_data):

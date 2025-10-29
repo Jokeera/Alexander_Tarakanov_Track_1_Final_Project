@@ -1,49 +1,57 @@
 """
-FastAPI scoring service
--> получает raw признаки (как в train.csv)
--> pipeline сам делает feature engineering и preprocessing
+FastAPI scoring service — FINAL
+-----------------------------------
+→ получает engineered-features (как в train_features.csv)
+→ pipeline сам делает только preprocessing + инференс
+→ использует сохранённый лучший порог из metrics.json
 """
 
 from pathlib import Path
-from typing import Optional
-
+import json
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+MODEL_PATH = Path("models/model.pkl")
+METRICS_PATH = Path("models/metrics.json")
 
-# ------------------------------------------------------------------------------------
-# MODEL LOADING
-# ------------------------------------------------------------------------------------
-
-MODEL_PATH = "models/model.pkl"
-model = None
-
+# =========================================================
+# API и модель
+# =========================================================
 app = FastAPI(
     title="Credit Scoring API",
-    description="Predict probability of default using trained ML model",
+    description="Predict probability of default (PD-model)",
     version="1.0.0",
 )
+model = None
+best_threshold = 0.5
 
 
 @app.on_event("startup")
-async def load_model():
-    """Load trained pipeline on startup"""
-    global model
-    if Path(MODEL_PATH).exists():
+async def _load_model():
+    """Load trained sklearn pipeline and threshold on startup."""
+    global model, best_threshold
+
+    if MODEL_PATH.exists():
         model = joblib.load(MODEL_PATH)
-        print("✅ Model loaded:", MODEL_PATH)
+        print(f"✅ Model loaded from {MODEL_PATH}")
     else:
-        print("⚠️ Model file not found:", MODEL_PATH)
+        print(f"⚠️ Model file not found: {MODEL_PATH}")
+
+    if METRICS_PATH.exists():
+        try:
+            obj = json.loads(METRICS_PATH.read_text())
+            best_threshold = float(obj.get("best_thr", {}).get("threshold", 0.5))
+            print(f"✅ Threshold loaded: {best_threshold:.3f}")
+        except Exception:
+            best_threshold = 0.5
 
 
-# ------------------------------------------------------------------------------------
-# REQUEST SCHEMA
-# (Raw features ONLY — same columns as in train_raw.csv)
-# ------------------------------------------------------------------------------------
-
-class CreditRaw(BaseModel):
+# =========================================================
+# SCHEMA (engineered features only)
+# =========================================================
+class CreditFeatures(BaseModel):
     limit_bal: float
     sex: int = Field(..., ge=1, le=2)
     education: int = Field(..., ge=1, le=4)
@@ -71,21 +79,28 @@ class CreditRaw(BaseModel):
     pay_amt5: float
     pay_amt6: float
 
+    # engineered features
+    age_bin: str
+    utilization_last: float
+    pay_delay_sum: int
+    pay_delay_max: int
+    bill_trend: float
+    pay_trend: float
+    bill_avg: float
+    pay_amt_avg: float
+    pay_to_bill_ratio: float
 
-# ------------------------------------------------------------------------------------
-# RESPONSE SCHEMA
-# ------------------------------------------------------------------------------------
 
 class PredictionResponse(BaseModel):
     predicted_class: int
     predicted_proba: float
     risk_level: str
+    threshold: float
 
 
-# ------------------------------------------------------------------------------------
+# =========================================================
 # ENDPOINTS
-# ------------------------------------------------------------------------------------
-
+# =========================================================
 @app.get("/")
 async def root():
     return {"message": "Credit Scoring API", "model_loaded": model is not None}
@@ -97,31 +112,30 @@ async def health():
 
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict(payload: CreditRaw):
-    """Infer with trained sklearn Pipeline"""
-
+async def predict(payload: CreditFeatures):
+    """Infer using trained sklearn Pipeline."""
     if model is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
 
     try:
-        df = pd.DataFrame([payload.dict()])  # raw → DataFrame
+        df = pd.DataFrame([payload.dict()])
 
-        # full preprocess+features inside pipeline
-        proba = model.predict_proba(df)[0, 1]
-        pred = model.predict(df)[0]
+        proba = float(model.predict_proba(df)[0, 1])
+        pred = int(proba >= best_threshold)
 
         risk = "Low" if proba < 0.3 else "Medium" if proba < 0.6 else "High"
 
         return PredictionResponse(
-            predicted_class=int(pred),
-            predicted_proba=float(proba),
+            predicted_class=pred,
+            predicted_proba=proba,
             risk_level=risk,
+            threshold=best_threshold,
         )
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

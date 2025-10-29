@@ -16,15 +16,34 @@ def load_params() -> dict:
 
 
 REQ_BASE_COLS = [
-    "limit_bal", "sex", "education", "marriage", "age",
-    "pay_0", "pay_2", "pay_3", "pay_4", "pay_5", "pay_6",
-    "bill_amt1", "bill_amt2", "bill_amt3", "bill_amt4", "bill_amt5", "bill_amt6",
-    "pay_amt1", "pay_amt2", "pay_amt3", "pay_amt4", "pay_amt5", "pay_amt6",
+    "limit_bal",
+    "sex",
+    "education",
+    "marriage",
+    "age",
+    "pay_0",
+    "pay_2",
+    "pay_3",
+    "pay_4",
+    "pay_5",
+    "pay_6",
+    "bill_amt1",
+    "bill_amt2",
+    "bill_amt3",
+    "bill_amt4",
+    "bill_amt5",
+    "bill_amt6",
+    "pay_amt1",
+    "pay_amt2",
+    "pay_amt3",
+    "pay_amt4",
+    "pay_amt5",
+    "pay_amt6",
     "target",
 ]
-BILL_COLS = ["bill_amt1","bill_amt2","bill_amt3","bill_amt4","bill_amt5","bill_amt6"]
-PAY_AMT_COLS = ["pay_amt1","pay_amt2","pay_amt3","pay_amt4","pay_amt5","pay_amt6"]
-PAY_STATUS_COLS = ["pay_0","pay_2","pay_3","pay_4","pay_5","pay_6"]
+BILL_COLS = ["bill_amt1", "bill_amt2", "bill_amt3", "bill_amt4", "bill_amt5", "bill_amt6"]
+PAY_AMT_COLS = ["pay_amt1", "pay_amt2", "pay_amt3", "pay_amt4", "pay_amt5", "pay_amt6"]
+PAY_STATUS_COLS = ["pay_0", "pay_2", "pay_3", "pay_4", "pay_5", "pay_6"]
 
 
 def _assert_required(df: pd.DataFrame, where: str) -> None:
@@ -40,8 +59,7 @@ def create_features(df: pd.DataFrame, params: dict) -> pd.DataFrame:
     # 1) Возраст в категории
     age_bins = params["features"]["age_bins"]
     age_labels = params["features"]["age_labels"]
-    out["age_bin"] = pd.cut(out["age"], bins=age_bins,
-                            labels=age_labels, include_lowest=True)
+    out["age_bin"] = pd.cut(out["age"], bins=age_bins, labels=age_labels, include_lowest=True)
 
     # 2) Utilization last month (bill_amt1 / limit_bal)
     #    Безопасное деление, клип на [0, 2]
@@ -55,7 +73,9 @@ def create_features(df: pd.DataFrame, params: dict) -> pd.DataFrame:
     out["pay_delay_max"] = out[PAY_STATUS_COLS].max(axis=1)
 
     # 5) Тренд задолженности за 3 месяца: (bill1 - bill3) / (|bill3| + 1)
-    out["bill_trend"] = ((out["bill_amt1"] - out["bill_amt3"]) / (out["bill_amt3"].abs() + 1.0)).clip(-5, 5)
+    out["bill_trend"] = (
+        (out["bill_amt1"] - out["bill_amt3"]) / (out["bill_amt3"].abs() + 1.0)
+    ).clip(-5, 5)
 
     # 6) Тренд платежей за 3 месяца: (pay1 - pay3) / (pay3 + 1)
     out["pay_trend"] = ((out["pay_amt1"] - out["pay_amt3"]) / (out["pay_amt3"] + 1.0)).clip(-5, 5)
@@ -65,14 +85,22 @@ def create_features(df: pd.DataFrame, params: dict) -> pd.DataFrame:
     out["pay_amt_avg"] = out[PAY_AMT_COLS].mean(axis=1)
 
     # 8) Отношение платежей к среднему долгу, клип [0,5]
-    out["pay_to_bill_ratio"] = np.where(out["bill_avg"] > 0,
-                                        out["pay_amt_avg"] / out["bill_avg"], 0.0)
+    out["pay_to_bill_ratio"] = np.where(
+        out["bill_avg"] > 0, out["pay_amt_avg"] / out["bill_avg"], 0.0
+    )
     out["pay_to_bill_ratio"] = out["pay_to_bill_ratio"].clip(0, 5)
 
     # Стабильный порядок: базовые → новые признаки → target в конце
     new_cols = [
-        "age_bin", "utilization_last", "pay_delay_sum", "pay_delay_max",
-        "bill_trend", "pay_trend", "bill_avg", "pay_amt_avg", "pay_to_bill_ratio",
+        "age_bin",
+        "utilization_last",
+        "pay_delay_sum",
+        "pay_delay_max",
+        "bill_trend",
+        "pay_trend",
+        "bill_avg",
+        "pay_amt_avg",
+        "pay_to_bill_ratio",
     ]
     base_cols_no_target = [c for c in REQ_BASE_COLS if c != "target" and c in out.columns]
     cols = base_cols_no_target + new_cols + (["target"] if "target" in out.columns else [])
@@ -83,9 +111,9 @@ def main() -> None:
     P = load_params()
 
     raw_train = P["data"]["train_raw_path"]
-    raw_test  = P["data"]["test_raw_path"]
+    raw_test = P["data"]["test_raw_path"]
     feat_train = P["data"]["train_features_path"]
-    feat_test  = P["data"]["test_features_path"]
+    feat_test = P["data"]["test_features_path"]
 
     Path(feat_train).parent.mkdir(parents=True, exist_ok=True)
 
@@ -107,9 +135,20 @@ def main() -> None:
 
     print(f"[features] Saved: {feat_train} {train_features.shape}")
     print(f"[features] Saved: {feat_test} {test_features.shape}")
-    print("[features] New feature columns:",
-          ["age_bin","utilization_last","pay_delay_sum","pay_delay_max",
-           "bill_trend","pay_trend","bill_avg","pay_amt_avg","pay_to_bill_ratio"])
+    print(
+        "[features] New feature columns:",
+        [
+            "age_bin",
+            "utilization_last",
+            "pay_delay_sum",
+            "pay_delay_max",
+            "bill_trend",
+            "pay_trend",
+            "bill_avg",
+            "pay_amt_avg",
+            "pay_to_bill_ratio",
+        ],
+    )
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 
 from src.models.train import calculate_metrics
+
 # Берём каноничную реализацию PSI и оборачиваем её обработкой edge-cейсов
 from src.monitoring.api_drift_test import psi_score as _psi_score
 
@@ -100,7 +101,7 @@ def test_metrics_binary_classification():
     metrics = calculate_metrics(y_true, y_pred, y_proba)
 
     expected_precision = 2 / 3  # TP=2, FP=1
-    expected_recall = 2 / 3     # TP=2, FN=1
+    expected_recall = 2 / 3  # TP=2, FN=1
 
     assert abs(metrics["precision"] - expected_precision) < 1e-6
     assert abs(metrics["recall"] - expected_recall) < 1e-6
@@ -119,11 +120,13 @@ def test_metrics_imbalanced_data():
     """Метрики на дисбалансном датасете считаются и отражают низкий recall."""
     np.random.seed(7)
     y_true = np.array([0] * 90 + [1] * 10)
-    y_proba = np.concatenate([
-        np.random.uniform(0.0, 0.3, 85),   # TN
-        np.random.uniform(0.6, 0.9, 5),    # TP
-        np.random.uniform(0.0, 0.4, 10),   # FN
-    ])
+    y_proba = np.concatenate(
+        [
+            np.random.uniform(0.0, 0.3, 85),  # TN
+            np.random.uniform(0.6, 0.9, 5),  # TP
+            np.random.uniform(0.0, 0.4, 10),  # FN
+        ]
+    )
     y_pred = (y_proba >= 0.5).astype(int)
 
     metrics = calculate_metrics(y_true, y_pred, y_proba)
