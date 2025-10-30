@@ -13,8 +13,8 @@ stages:
       size: 2705
     - path: src/data/make_dataset.py
       hash: md5
-      md5: 76dbf8e59a24f916d21b9716228d6901
-      size: 4814
+      md5: be461e88e1f37a2da1a5ab7b350edcea
+      size: 4815
     params:
       params.yaml:
         data:
@@ -53,8 +53,8 @@ stages:
       size: 2705
     - path: src/features/build_features.py
       hash: md5
-      md5: 039fdd36ea782c95e747261c2bb2c9e0
-      size: 4821
+      md5: 27a455250a14f2ce4d67283ba8ed9e86
+      size: 5055
     params:
       params.yaml:
         features:
@@ -99,8 +99,8 @@ stages:
       size: 3295
     - path: src/models/train.py
       hash: md5
-      md5: 93afe1a12261ad553147e7069ce73f87
-      size: 8725
+      md5: 1ee3c0f1c022e989dff711eeb3b53e89
+      size: 10290
     params:
       params.yaml:
         mlflow:
@@ -133,14 +133,30 @@ stages:
           cv_folds: 3
           scoring: roc_auc
     outs:
+    - path: models/confusion_best.png
+      hash: md5
+      md5: f471d578cf56c8e6b4892249196fdcf2
+      size: 17481
+    - path: models/confusion_default.png
+      hash: md5
+      md5: 4699705796c5916fd40e8b63a1645630
+      size: 16841
     - path: models/metrics.json
       hash: md5
-      md5: 8e9606005ea035fedb6cd8b61454441c
-      size: 416
+      md5: 43ea4628f2d72d7acd956b4ffbdcf5fb
+      size: 428
     - path: models/model.pkl
       hash: md5
-      md5: db833ab0c8546957bd231c6be36f65d3
-      size: 572896
+      md5: 70ee39fce0ddb2af30ad14300ad6c410
+      size: 573312
+    - path: models/pr_curve.png
+      hash: md5
+      md5: 910525b488efa947b3150ca1da1470ff
+      size: 26557
+    - path: models/roc_curve.png
+      hash: md5
+      md5: 617fbfff27940a5ae5813a4fd4b93488
+      size: 26697
   drift:
     cmd: python -m src.monitoring.drift
     deps:
@@ -154,15 +170,15 @@ stages:
       size: 5254625
     - path: models/model.pkl
       hash: md5
-      md5: db833ab0c8546957bd231c6be36f65d3
-      size: 572896
+      md5: 70ee39fce0ddb2af30ad14300ad6c410
+      size: 573312
     - path: params.yaml
       hash: md5
       md5: d113100df831070a7fcccd2b56c982a7
       size: 2705
     - path: src/monitoring/drift.py
       hash: md5
-      md5: 481a03fd340acf2c5695c637f06e89a8
+      md5: dea58cae26c28556b1053aa702891540
       size: 324
     params:
       params.yaml:
