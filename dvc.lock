@@ -7,10 +7,14 @@ stages:
       hash: md5
       md5: 940b416bb13a9b24bb5c9e1589284005
       size: 2862995
+    - path: params.yaml
+      hash: md5
+      md5: d113100df831070a7fcccd2b56c982a7
+      size: 2705
     - path: src/data/make_dataset.py
       hash: md5
-      md5: 2d8a9a89f4078ffa6447534ffb0d5888
-      size: 4746
+      md5: 76dbf8e59a24f916d21b9716228d6901
+      size: 4814
     params:
       params.yaml:
         data:
@@ -43,6 +47,10 @@ stages:
       hash: md5
       md5: 23ac3ff19a2b13e36efecd90d406a6c0
       size: 2782435
+    - path: params.yaml
+      hash: md5
+      md5: d113100df831070a7fcccd2b56c982a7
+      size: 2705
     - path: src/features/build_features.py
       hash: md5
       md5: 039fdd36ea782c95e747261c2bb2c9e0
@@ -81,14 +89,18 @@ stages:
       hash: md5
       md5: de9a73215339fb70258918714ebb6611
       size: 5254625
+    - path: params.yaml
+      hash: md5
+      md5: d113100df831070a7fcccd2b56c982a7
+      size: 2705
     - path: src/models/pipeline.py
       hash: md5
       md5: 19dfa0d51d3924a975d2cf39d564e73a
       size: 3295
     - path: src/models/train.py
       hash: md5
-      md5: b4fc1f1eb9d436b743797a4adde931a7
-      size: 6351
+      md5: 93afe1a12261ad553147e7069ce73f87
+      size: 8725
     params:
       params.yaml:
         mlflow:
@@ -123,12 +135,12 @@ stages:
     outs:
     - path: models/metrics.json
       hash: md5
-      md5: 7200a1c5fe8e0eb6017c5f0cb18687a6
-      size: 168
+      md5: 8e9606005ea035fedb6cd8b61454441c
+      size: 416
     - path: models/model.pkl
       hash: md5
-      md5: 7994c258127c70068ea3eabf24847cc4
-      size: 565595
+      md5: db833ab0c8546957bd231c6be36f65d3
+      size: 572896
   drift:
     cmd: python -m src.monitoring.drift
     deps:
@@ -142,8 +154,12 @@ stages:
       size: 5254625
     - path: models/model.pkl
       hash: md5
-      md5: 7994c258127c70068ea3eabf24847cc4
-      size: 565595
+      md5: db833ab0c8546957bd231c6be36f65d3
+      size: 572896
+    - path: params.yaml
+      hash: md5
+      md5: d113100df831070a7fcccd2b56c982a7
+      size: 2705
     - path: src/monitoring/drift.py
       hash: md5
       md5: 481a03fd340acf2c5695c637f06e89a8

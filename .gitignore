@@ -1,29 +1,34 @@
 # Python
 __pycache__/
 *.py[cod]
-*.so
-*.egg-info/
-*.egg
 *.pyo
+*.pyd
+*.so
 
-# Jupyter
+# Jupyter / Pytest caches
 .ipynb_checkpoints/
-
-# MLflow (локальные артефакты)
-mlruns/
-mlartifacts/
-
-# DVC data (исключаем сырые/обработанные CSV, кроме .gitkeep/.dvc)
-data/**/*.csv
-!data/**/.gitkeep
-
-# Models (артефакты)
-models/*.pkl
-models/*.joblib
-
-# OS/IDE
+.pytest_cache/
 .DS_Store
-Thumbs.db
+
+# Virtual environments
+venv/
+.env/
+.envrc
+
+# Data & models
+data/processed/
+models/*.pkl
+models/*.png
+models/*.json
+
+# DVC and MLflow local dirs
+.dvc/
+mlruns/
+
+# Logs
+*.log
+*.tmp
+
+# IDE / System
 .vscode/
 .idea/
-!data/raw/UCI_Credit_Card.csv

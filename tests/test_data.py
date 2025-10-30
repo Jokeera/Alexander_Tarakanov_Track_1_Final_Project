@@ -1,15 +1,13 @@
 """Tests for data preparation and validation"""
 
 import warnings
-
-import numpy as np
 import pandas as pd
 import pytest
 
-warnings.filterwarnings("ignore")
-
 from src.data.make_dataset import cast_dtypes, clean_data, reorder_columns
 from src.data.validation import validate_dataframe
+
+warnings.filterwarnings("ignore")
 
 
 @pytest.fixture
@@ -19,8 +17,8 @@ def raw_data():
         {
             "limit_bal": [20000, 30000],
             "sex": [1, 2],
-            "education": [2, 5],  # 5 → будет заменено на 4
-            "marriage": [1, 0],  # 0 → будет заменено на 3
+            "education": [2, 5],
+            "marriage": [1, 0],
             "age": [25, 45],
             "pay_0": [0, 2],
             "pay_2": [2, 1],
@@ -43,6 +41,7 @@ def raw_data():
             "target": [0, 1],
         }
     )
+
 
 
 def test_clean_data(raw_data):

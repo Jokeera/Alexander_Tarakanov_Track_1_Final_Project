@@ -10,6 +10,8 @@ exclude = '''
   | mlruns
   | models
   | data
+  | notebooks
+  | \.ipynb_checkpoints
 )/
 '''
 
@@ -30,11 +32,12 @@ exclude = [
     ".dvc",
     "mlruns",
     "models",
-    "data"
+    "data",
+    "notebooks",
+    ".ipynb_checkpoints",
+    "**/.ipynb_checkpoints"
 ]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_functions = ["test_*"]
-addopts = "-v --tb=short"
+# Если хочешь, чтобы длинные строки остались в отдельных файлах:
+# per-file-ignores = [
+#   "src/monitoring/api_drift_test.py:E501",
+# ]

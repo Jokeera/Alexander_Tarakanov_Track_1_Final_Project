@@ -1,9 +1,12 @@
-# =====================================
-# Production-ready Dockerfile for API
-# =====================================
+# ======================================================
+# ✅ Production-ready Dockerfile for Credit Scoring API
+# ======================================================
 
 FROM python:3.10-slim AS base
 
+# -------------------------------
+# 1. Base system setup
+# -------------------------------
 WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1 \
@@ -11,29 +14,43 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install minimal system deps
+# Install essential system packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install requirements first (layer caching)
+# -------------------------------
+# 2. Install Python dependencies
+# -------------------------------
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# -------------------------------
+# 3. Copy project files
+# -------------------------------
 COPY src ./src
 COPY models ./models
 COPY params.yaml .
 
+# Create working dirs used by DVC / MLflow
 RUN mkdir -p data/raw data/processed mlruns
 
-# Expose API port
+# -------------------------------
+# 4. Security (non-root execution)
+# -------------------------------
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
+# -------------------------------
+# 5. Expose port & healthcheck
+# -------------------------------
 EXPOSE 8000
 
-# Healthcheck without requests dependency (curl present)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+  CMD curl -fs http://localhost:8000/health || exit 1
 
-# Default start command
+# -------------------------------
+# 6. Start FastAPI app
+# -------------------------------
 CMD ["uvicorn", "src.api.app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,95 +1,74 @@
-# =========================================
-# DVC Pipeline — автоматизация ML workflow
-# =========================================
+# ============================================================
+# DVC Pipeline — end-to-end ML workflow for Credit Scoring PD-model
+# ============================================================
 
 stages:
 
-  # ---------------------------
-  # 1️⃣ Подготовка данных
-  # ---------------------------
+  # ----------------------------------------------------------
+  # 1️⃣ PREPARE — загрузка и очистка сырых данных
+  # ----------------------------------------------------------
   prepare:
-    # выполняем скрипт загрузки + очистки + train/test split
     cmd: python -m src.data.make_dataset
-    
-    # зависимости: исходная сырая таблица + код
     deps:
       - src/data/make_dataset.py
       - data/raw/UCI_Credit_Card.csv
-
-    # параметры, влияющие на этот этап
+      - params.yaml
     params:
       - data
-
-    # артефакты, которые создаются после подготовки данных
     outs:
       - data/processed/train.csv
       - data/processed/test.csv
 
-
-  # ---------------------------
-  # 2️⃣ Feature Engineering
-  # ---------------------------
+  # ----------------------------------------------------------
+  # 2️⃣ FEATURES — инженерия признаков
+  # ----------------------------------------------------------
   features:
-    # создаём новые признаки, сохраняем train/test с фичами
     cmd: python -m src.features.build_features
-    
     deps:
       - src/features/build_features.py
       - data/processed/train.csv
       - data/processed/test.csv
-
+      - params.yaml
     params:
       - features
-
     outs:
       - data/processed/train_features.csv
       - data/processed/test_features.csv
 
-
-  # ---------------------------
-  # 3️⃣ Обучение модели + MLflow
-  # ---------------------------
+  # ----------------------------------------------------------
+  # 3️⃣ TRAIN — обучение модели и логирование в MLflow
+  # ----------------------------------------------------------
   train:
     cmd: python -m src.models.train
-
     deps:
       - src/models/train.py
       - src/models/pipeline.py
       - data/processed/train_features.csv
       - data/processed/test_features.csv
-
-    # какие части params.yaml влияют на обучение:
+      - params.yaml
     params:
       - model
       - training
       - mlflow
-
-    # модель — артефакт
     outs:
       - models/model.pkl
-
-    # метрики — не кешируем (чтоб не засорять DVC storage)
     metrics:
       - models/metrics.json:
           cache: false
 
-
-  # ---------------------------
-  # 4️⃣ Мониторинг дрифта данных
-  # ---------------------------
+  # ----------------------------------------------------------
+  # 4️⃣ DRIFT — контроль дрифта данных (Population Stability Index)
+  # ----------------------------------------------------------
   drift:
-    # скрипт PSI мониторинга
     cmd: python -m src.monitoring.drift
-
     deps:
       - src/monitoring/drift.py
       - data/processed/train_features.csv
       - data/processed/test_features.csv
       - models/model.pkl
-
+      - params.yaml
     params:
       - monitoring
-
-    # отчёт мониторинга
     outs:
       - models/drift_report.json
+
