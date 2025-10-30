@@ -43,7 +43,6 @@ def raw_data():
     )
 
 
-
 def test_clean_data(raw_data):
     df = clean_data(raw_data)
 
