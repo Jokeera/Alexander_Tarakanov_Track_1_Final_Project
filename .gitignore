@@ -33,5 +33,7 @@ mlruns/
 .vscode/
 .idea/
 
-# Allow raw dataset to be tracked by DVC
+# Allow raw dataset and its DVC file
+!data/raw/
 !data/raw/UCI_Credit_Card.csv
+!data/raw/UCI_Credit_Card.csv.dvc
