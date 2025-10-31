@@ -5,7 +5,7 @@
 stages:
 
   # ----------------------------------------------------------
-  # 1️⃣ PREPARE — загрузка и очистка сырых данных
+  # 1. PREPARE — загрузка и очистка сырых данных
   # ----------------------------------------------------------
   prepare:
     cmd: python -m src.data.make_dataset
@@ -20,7 +20,7 @@ stages:
       - data/processed/test.csv
 
   # ----------------------------------------------------------
-  # 2️⃣ FEATURES — инженерия признаков
+  # 2. FEATURES — инженерия признаков
   # ----------------------------------------------------------
   features:
     cmd: python -m src.features.build_features
@@ -36,7 +36,7 @@ stages:
       - data/processed/test_features.csv
 
   # ----------------------------------------------------------
-  # 3️⃣ TRAIN — обучение модели и логирование в MLflow
+  # 3. TRAIN — обучение модели и логирование в MLflow
   # ----------------------------------------------------------
   train:
     cmd: python -m src.models.train
@@ -52,12 +52,16 @@ stages:
       - mlflow
     outs:
       - models/model.pkl
+      - models/roc_curve.png
+      - models/pr_curve.png
+      - models/confusion_default.png
+      - models/confusion_best.png
     metrics:
       - models/metrics.json:
           cache: false
 
   # ----------------------------------------------------------
-  # 4️⃣ DRIFT — контроль дрифта данных (Population Stability Index)
+  # 4. DRIFT — контроль дрифта данных (Population Stability Index)
   # ----------------------------------------------------------
   drift:
     cmd: python -m src.monitoring.drift
@@ -69,6 +73,6 @@ stages:
       - params.yaml
     params:
       - monitoring
-    outs:
-      - models/drift_report.json
-
+    metrics:
+      - models/drift_report.json:
+          cache: false

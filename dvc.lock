@@ -9,8 +9,8 @@ stages:
       size: 2862995
     - path: params.yaml
       hash: md5
-      md5: d113100df831070a7fcccd2b56c982a7
-      size: 2705
+      md5: 8149a8d5f5af342a87efe77ea18b05fc
+      size: 1244
     - path: src/data/make_dataset.py
       hash: md5
       md5: be461e88e1f37a2da1a5ab7b350edcea
@@ -49,8 +49,8 @@ stages:
       size: 2782435
     - path: params.yaml
       hash: md5
-      md5: d113100df831070a7fcccd2b56c982a7
-      size: 2705
+      md5: 8149a8d5f5af342a87efe77ea18b05fc
+      size: 1244
     - path: src/features/build_features.py
       hash: md5
       md5: 27a455250a14f2ce4d67283ba8ed9e86
@@ -91,8 +91,8 @@ stages:
       size: 5254625
     - path: params.yaml
       hash: md5
-      md5: d113100df831070a7fcccd2b56c982a7
-      size: 2705
+      md5: 8149a8d5f5af342a87efe77ea18b05fc
+      size: 1244
     - path: src/models/pipeline.py
       hash: md5
       md5: 19dfa0d51d3924a975d2cf39d564e73a
@@ -135,28 +135,28 @@ stages:
     outs:
     - path: models/confusion_best.png
       hash: md5
-      md5: f471d578cf56c8e6b4892249196fdcf2
-      size: 17481
+      md5: ed989b70822e974e258d91547d6a14ea
+      size: 16165
     - path: models/confusion_default.png
       hash: md5
-      md5: 4699705796c5916fd40e8b63a1645630
-      size: 16841
+      md5: df05e08440e589de55729ca9edd3524f
+      size: 15828
     - path: models/metrics.json
       hash: md5
       md5: 43ea4628f2d72d7acd956b4ffbdcf5fb
       size: 428
     - path: models/model.pkl
       hash: md5
-      md5: 70ee39fce0ddb2af30ad14300ad6c410
-      size: 573312
+      md5: 2860fcebb98810b8b009244bd2a83f24
+      size: 574253
     - path: models/pr_curve.png
       hash: md5
-      md5: 910525b488efa947b3150ca1da1470ff
-      size: 26557
+      md5: ff5b41e492589a8fdd21c37e873e0623
+      size: 24505
     - path: models/roc_curve.png
       hash: md5
-      md5: 617fbfff27940a5ae5813a4fd4b93488
-      size: 26697
+      md5: fa7cc0f786b1a4b53d5630424e49a05e
+      size: 25772
   drift:
     cmd: python -m src.monitoring.drift
     deps:
@@ -170,12 +170,12 @@ stages:
       size: 5254625
     - path: models/model.pkl
       hash: md5
-      md5: 70ee39fce0ddb2af30ad14300ad6c410
-      size: 573312
+      md5: 2860fcebb98810b8b009244bd2a83f24
+      size: 574253
     - path: params.yaml
       hash: md5
-      md5: d113100df831070a7fcccd2b56c982a7
-      size: 2705
+      md5: 8149a8d5f5af342a87efe77ea18b05fc
+      size: 1244
     - path: src/monitoring/drift.py
       hash: md5
       md5: dea58cae26c28556b1053aa702891540
