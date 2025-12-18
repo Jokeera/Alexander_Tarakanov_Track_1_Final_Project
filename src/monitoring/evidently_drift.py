@@ -1,5 +1,6 @@
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 REPORT_DIR = Path("reports")
 REPORT_DIR.mkdir(exist_ok=True)

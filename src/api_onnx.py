@@ -2,13 +2,12 @@
 
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import numpy as np
 import onnxruntime as ort
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-
 
 APP_DIR = Path(__file__).resolve().parent.parent
 MODELS_DIR = APP_DIR / "models"
