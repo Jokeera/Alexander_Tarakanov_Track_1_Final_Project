@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Upgrade pip toolchain
         run: python -m pip install --upgrade pip wheel setuptools
@@ -108,12 +108,7 @@ jobs:
           curl -f http://localhost:8000/health
           docker rm -f test-api
 
-      - name: Save Docker image
-        run: docker save credit-scoring-api:latest | gzip > credit-scoring-api.tar.gz
-
-      - name: Upload Docker image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: credit-scoring-api.tar.gz
-          retention-days: 7
+      # NOTE:
+      # We do NOT export the image as tar.gz artifact because GitHub hosted runners
+      # may fail with "No space left on device". The image is already built and
+      # smoke-tested above, which is the key verification step.
