@@ -1,0 +1,50 @@
+name: Track2 ONNX + Security
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  onnx-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ONNX validate
+        run: python -u scripts/model_training/onnx_validate.py
+
+      - name: Quantize ONNX
+        run: python -u scripts/model_training/quantize_onnx.py
+
+      - name: Benchmark
+        run: python -u scripts/model_training/benchmark_inference.py
+
+  docker-build-and-scan:
+    needs: onnx-checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build PROD image
+        run: docker build -f deployment/docker/Dockerfile.api_onnx.prod -t credit-api:prod .
+
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: "credit-api:prod"
+          format: "table"
+          exit-code: "0"
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
