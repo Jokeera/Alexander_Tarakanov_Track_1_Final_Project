@@ -16,9 +16,9 @@ MODELS_DIR = APP_DIR / "models"
 # В контейнере у тебя /app/models/... (копируется Dockerfile)
 # Локально у тебя models/... в корне
 CANDIDATE_ROOTS = [
-    Path("models"),               # local run from repo root
-    Path("/app/models"),          # docker
-    MODELS_DIR,                   # fallback
+    Path("models"),  # local run from repo root
+    Path("/app/models"),  # docker
+    MODELS_DIR,  # fallback
 ]
 
 ONNX_PATH = None
@@ -36,7 +36,9 @@ for root in CANDIDATE_ROOTS:
         break
 
 if ONNX_PATH is None:
-    raise RuntimeError("Model files not found. Expected models/onnx/credit_nn.onnx and models/nn/scaler_params.json and feature_columns.json")
+    raise RuntimeError(
+        "Model files not found. Expected models/onnx/credit_nn.onnx and models/nn/scaler_params.json and feature_columns.json"
+    )
 
 # Load feature order
 with open(FEATURES_PATH, "r", encoding="utf-8") as f:
@@ -72,7 +74,9 @@ def _vectorize_and_scale(features: Dict[str, Any]) -> np.ndarray:
     # strict check: all required features must exist
     missing = [c for c in FEATURE_COLUMNS if c not in features]
     if missing:
-        raise HTTPException(status_code=422, detail=f"Missing features: {missing[:10]} (total={len(missing)})")
+        raise HTTPException(
+            status_code=422, detail=f"Missing features: {missing[:10]} (total={len(missing)})"
+        )
 
     x = np.array([float(features[c]) for c in FEATURE_COLUMNS], dtype=np.float32)
     x = (x - MEAN) / (SCALE + EPS)
